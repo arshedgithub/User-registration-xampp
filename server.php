@@ -2,7 +2,7 @@
 
 include('config/db_connect.php');
 
-$fileeName = '';
+// $fileName = '';
 $errors = array('firstName' => '', 'lastName' => '', 'email' => '', 'birthDate' => '', 'file'=>'');
 
 if(isset($_POST['submit'])){ 
@@ -43,40 +43,37 @@ if(isset($_POST['submit'])){
         $fileName =  $_FILES['file']['name'];
         $fileTmpName =  $_FILES['file']['tmp_name'];
         $fileSize =  $_FILES['file']['size'];
-        print_r($_FILES['file']);
         
         $fileExtension = pathinfo($fileName, PATHINFO_EXTENSION);
         
         $allowed = array('jpg', 'jpeg', 'png', 'pdf', 'zip', 'docx');
         if(!in_array($fileExtension, $allowed)){
-            echo 'Your file extension must be .zip, .docx, .pdf, .jpg, .pdf, .png, .jpg, .jpeg';
+            $errors['file'] = 'Your file extension must be .docx, .pdf, .jpg, .pdf, .png, .jpg, .jpeg or .zip';
         }else if ($fileSize>1000000) {
-            echo 'file is too large';
+            $errors['file'] = 'file is too large';
         }else{
-            $fileNameNew = uniqid('', true).".".$fileExtension;
-            $fileDestination = 'uploads/'.$fileNameNew;
+            $newFileName = uniqid('', true).".".$fileExtension;
+            $fileDestination = 'uploads/'.$newFileName;
             if (move_uploaded_file($fileTmpName, $fileDestination)) {
                 echo 'success';
             }
                 
-                // header('location: register.php?uploadsuccess');
-            }
-        }
-        
-        if (!array_filter($errors)) {
-            $firstName = mysqli_real_escape_string($conn, $_POST['firstName']);
-            $lastName = mysqli_real_escape_string($conn, $_POST['lastName']);
-            $email = mysqli_real_escape_string($conn, $_POST['email']);
-            $birthDate = mysqli_real_escape_string($conn, $_POST['birthDate']);
-            
-            $query = "INSERT INTO users (firstName, lastName, email, birthDate, files) VALUES('$firstName', '$lastName','$email', '$birthDate', '$fileName')";
-            if(mysqli_query($conn, $query)){
-                // header('Location: data.php');
-                echo $email.$file;
-            }else{
-                echo "Error: " . mysql_error($conn);
-            }
         }
     }
+        
+    if (!array_filter($errors)) {
+        $firstName = mysqli_real_escape_string($conn, $_POST['firstName']);
+        $lastName = mysqli_real_escape_string($conn, $_POST['lastName']);
+        $email = mysqli_real_escape_string($conn, $_POST['email']);
+        $birthDate = mysqli_real_escape_string($conn, $_POST['birthDate']);
+            
+        $query = "INSERT INTO users (firstName, lastName, email, birthDate, files, savedFile) VALUES('$firstName', '$lastName','$email', '$birthDate', '$fileName', '$newFileName')";
+        if(mysqli_query($conn, $query)){
+            header('Location: data.php');
+        }else{
+            echo "Error: " . mysqli_error($conn);
+        }
+    }
+}
 
 ?>
